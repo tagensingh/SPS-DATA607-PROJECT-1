@@ -93,13 +93,13 @@ Opponents <- Opponents[rowSums(Opponents=="")!=ncol(Opponents), ]
 
 #The following lines of code were from a web source.
 
-##Instantiate rating Averages 
-ratingAverages = NULL
+##Instantiate rating avgs 
+ratingavgs = NULL
 
 
 ##Loop through each row of Opponent Index. Match each Opponent Index with its corresponding p-rating. Get the average Opponent rating for each row
 
-##This code is modified from another in-house project
+##**This code is modified from another in-house project**
 
 for(row in 1:nrow(Opponents)){
   numberOfOpponents = 0
@@ -116,21 +116,21 @@ for(row in 1:nrow(Opponents)){
   }
   
   avg = sum/numberOfOpponents
-  ratingAverages = rbind(ratingAverages, data.frame(avg))
+  ratingavgs = rbind(ratingavgs, data.frame(avg))
 }
 
-## Save all data into TournamentResults dataframe
-tournamentresults <- data.frame(pnames, pstates, totalPoints, pratings, ratingAverages)
-colnames(tournamentresults) <- c("Player Name","State", "Points", "P-Rating", "Opponent Average P-Rating")
+## Creating dataframe for TournamentResults 
+tournamentresults1 <- data.frame(pnames, pstates, totalPoints, pratings, ratingavgs)
+colnames(tournamentresults1) <- c("Player Name","State", "Points", "P-Rating", "Opponent Average P-Rating")
 
 
-tournamentresults
+tournamentresults1
 
 ```
 
 ```{r,savingresults}
 
-write.csv(TournamentResults,"https://github.com/tagensingh/SPS-DATA607-PROJECT-1/blob/main/tournamentresults1.csv")
+write.csv(tournamentresults1,file = "tournamentresults1.csv")
 
 ```
 
