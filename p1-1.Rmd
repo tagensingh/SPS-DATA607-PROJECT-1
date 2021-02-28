@@ -1,0 +1,136 @@
+---
+title: "SPS-DATA607-PROJECT-1"
+author: "Tage N Singh"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+### This project makes use of the **"stringr"** package. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(stringr)
+
+```
+
+
+```{r,eloreadindata}
+eloreadin1 <- read.csv("https://raw.githubusercontent.com/tagensingh/SPS-DATA607-PROJECT-1/main/tournamentinfo.txt",skip = 3, header = F)
+
+#eloreadin1
+
+##Step 1 Remove the "dashed "-" lines from the data
+eloreadin2 <- str_split(eloreadin1[,], "-", simplify=TRUE)
+
+#eloreadin2
+
+```
+
+```{r,pnames}
+
+## Step 2 Get the Player Names. Apply regex where there is at least a first and last name
+pnames <- unlist(str_extract_all(eloreadin2[,], "\\w+[[:space:]]\\w+([[:space:]]\\w+)*", simplify = TRUE))
+pnames <- pnames[!pnames[,] == "",]
+
+#pnames
+
+```
+
+
+
+
+
+```{r,pstates}
+
+## Get the Player States. Use regex where there are two capital letters followed by a space and "|".
+# Remove blank rows from the data
+pstates <- unlist(str_extract_all(eloreadin2[,],"[A-Z][A-Z][[:space:]][\\|]"))
+pstates <- str_split(pstates, "[[:space:]][\\|]", simplify=TRUE)
+pstates <- pstates[, -2]
+
+#pstates
+
+```
+```{r,ppoints}
+## Get the total Number of Points. Use regex that gets decimal numbers. Remove blank rows from the data
+totalPoints <- unlist(str_extract_all(eloreadin2[,], "(\\d+)[.](\\d+)", simplify=TRUE))
+totalPoints <- totalPoints[!totalPoints[,] == "",]
+
+#totalPoints
+
+```
+
+```{r,playerratings}
+## Get the p-ratings. Use regex that gets numbers after R: and before any number of space. Remove blank rows from the data
+pratings <- unlist(str_extract_all(eloreadin2[,], "[R:]([[:space:]]+)([[:alnum:]]+)([[:space:]]*)", simplify=TRUE))
+pratings <- unlist(str_extract_all(pratings, "\\d+[[:alnum:]]+", simplify=TRUE))
+pratings <- unlist(str_extract_all(pratings, "\\d\\d\\d+", simplify=TRUE))
+pratings <- pratings[!pratings[,] == "",]
+pratings <- as.numeric(pratings)
+
+#pratings
+
+```
+
+```{r,opponents}
+
+## Get the opponent strings. Apply regex where there is a | followed by a letter, some space, a number, a |
+OpponentData <- unlist(str_extract_all(eloreadin2[,], "([\\|][A-Z]([[:space:]]+)\\d*[\\|])([A-Z]([[:space:]]+)\\d*[\\|])*", simplify=TRUE))
+Opponents <- matrix(ncol=7)
+
+## Get the individual Opponent Indexes into a matrix of 7 columns. Remove any blank rows from the data
+Opponents <- unlist(str_extract_all(OpponentData[,], "\\d+", simplify=TRUE))
+Opponents <- Opponents[rowSums(Opponents=="")!=ncol(Opponents), ]
+
+#Opponents
+
+```
+
+
+
+```{r,tourneyresults}
+
+#The following lines of code were from a web source.
+
+##Instantiate rating Averages 
+ratingAverages = NULL
+
+
+##Loop through each row of Opponent Index. Match each Opponent Index with its corresponding p-rating. Get the average Opponent rating for each row
+
+##This code is modified from another in-house project
+
+for(row in 1:nrow(Opponents)){
+  numberOfOpponents = 0
+  sum = 0
+  
+  for(col in 1:ncol(Opponents)){
+    
+    if(Opponents[row, col] != ""){ 
+      index <- Opponents[row, col] 
+      index <- strtoi(index, base=0L) 
+      sum = sum + strtoi(pratings[index]) 
+      numberOfOpponents = numberOfOpponents + 1 
+    }
+  }
+  
+  avg = sum/numberOfOpponents
+  ratingAverages = rbind(ratingAverages, data.frame(avg))
+}
+
+## Save all data into TournamentResults dataframe
+tournamentresults <- data.frame(pnames, pstates, totalPoints, pratings, ratingAverages)
+colnames(tournamentresults) <- c("Player Name","State", "Points", "P-Rating", "Opponent Average P-Rating")
+
+
+tournamentresults
+
+```
+
+```{r,savingresults}
+
+write.csv(TournamentResults,"https://github.com/tagensingh/SPS-DATA607-PROJECT-1/blob/main/tournamentresults1.csv")
+
+```
+
